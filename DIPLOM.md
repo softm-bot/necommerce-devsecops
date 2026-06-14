@@ -36,7 +36,7 @@
 | Шаг | Задача | Статус |
 |-----|--------|--------|
 | 0 | Necommerce работает локально (`docker compose up`) | ✅ 14.06.2026 |
-| 1 | Репозиторий на GitHub, первый push | ⏳ push |
+| 1 | Репозиторий на GitHub, первый push | ⏳ push (remote настроен) |
 | 2 | Минимальный CI — только сборка Docker | ⏳ |
 | 3 | Push образов в GHCR | ⏳ |
 | 4 | SAST (Semgrep) | ⏳ |
@@ -52,7 +52,17 @@
 
 > Каждая строка = одно действие. Новые записи — **сверху** (после этого заголовка).
 
-### 2026-06-14 — Шаг 1: подготовка Git (локально) ⏳
+### 2026-06-14 — Шаг 1: remote GitHub ⏳
+
+**Что сделано:**
+- Remote: https://github.com/softm-bot/necommerce-devsecops
+- Локально: 2 коммита на `main` (`5bef6ac`, `cea7a16`)
+
+**Результат:** Push из IDE не прошёл — нужен токен в терминале пользователя.
+
+**Следующий шаг:** в терминале `git push -u origin main`, затем ссылку эксперту Ниязу.
+
+### 2026-06-14 — Шаг 1: подготовка Git (локально) ✅
 
 **Что сделано:**
 - Удалены вложенные `.git` в `necommerce-backend/` и `necommerce-frontend/` (единый монорепозиторий)
@@ -60,9 +70,9 @@
 - `git init`, ветка `main`, первый коммит `5bef6ac` (113 файлов)
 - Проверено: `fcm.json`, `.env`, ключи — **не** в коммите
 
-**Результат:** Код готов к push. Репозиторий на GitHub создан пользователем.
+**Результат:** Код готов к push.
 
-**Следующий шаг:** `git remote add origin …` и `git push -u origin main` (нужен URL репозитория)
+**Следующий шаг:** создать репозиторий на GitHub, `git push`.
 
 ### 2026-06-14 — Шаг 0: локальный стенд ✅
 
@@ -137,4 +147,4 @@ sudo docker compose ps
 - [Задание трека DevSecOps](https://github.com/netology-code/sib-Diplom-Track-DevSecOps)
 - [Necommerce backend](https://github.com/netology-code/necommerce-backend)
 - [Necommerce frontend](https://github.com/netology-code/necommerce-frontend)
-- GitHub-репозиторий диплoma: _будет добавлен на шаге 1_
+- [GitHub-репозиторий диплoma](https://github.com/softm-bot/necommerce-devsecops)
