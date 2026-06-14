@@ -1,0 +1,60 @@
+# CI — шаг 2: только сборка Docker-образов
+#
+# Что делает этот файл:
+#   При каждом push в main GitHub запускает виртуальную машину (runner),
+#   скачивает код и собирает Docker-образы backend и frontend.
+#
+# Пока НЕ публикуем образы (push: false) — это будет шаг 3 (GHCR).
+#
+# Термины:
+#   workflow  — сценарий автоматизации (этот файл)
+#   job       — отдельная задача (backend / frontend)
+#   runs-on   — ОС виртуальной машины GitHub
+#   step      — один шаг внутри job
+
+name: CI — Docker build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-backend:
+    name: Backend — сборка образа
+    runs-on: ubuntu-latest
+    steps:
+      - name: Скачать код из репозитория
+        uses: actions/checkout@v4
+
+      - name: Подготовить Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Собрать образ backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./necommerce-backend
+          push: false
+          tags: necommerce-backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-frontend:
+    name: Frontend — сборка образа
+    runs-on: ubuntu-latest
+    steps:
+      - name: Скачать код из репозитория
+        uses: actions/checkout@v4
+
+      - name: Подготовить Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Собрать образ frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./necommerce-frontend
+          push: false
+          tags: necommerce-frontend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

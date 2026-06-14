@@ -7,9 +7,9 @@
 ## Общая карта (куда идём)
 
 ```
-Шаг 0  Локальный стенд          ← ВЫ ЗДЕСЬ (сделано)
-Шаг 1  GitHub-репозиторий       ← СЛЕДУЮЩИЙ
-Шаг 2  Минимальный CI (сборка)
+Шаг 0  Локальный стенд          ✅
+Шаг 1  GitHub-репозиторий       ✅
+Шаг 2  Минимальный CI (сборка)  ← СЛЕДУЮЩИЙ (файл готов, нужен push)
 Шаг 3  Push образов в GHCR
 Шаг 4  SAST (Semgrep)
 Шаг 5  Security Checks
@@ -107,7 +107,60 @@ git push -u origin main
 При запросе пароля вставьте **токен**, не пароль от аккаунта.
 
 #### 1.4 Написать эксперту
-Отправить Ниязу Кашапову ссылку на репозиторий.
+Отправить Ниязу Кашапову ссылку: https://github.com/softm-bot/necommerce-devsecops
+
+---
+
+## Шаг 2 — минимальный CI (сборка Docker) ⏳
+
+### Зачем
+**CI** (*Continuous Integration* — непрерывная интеграция) = при каждом `push` GitHub **автоматически** проверяет, что код **собирается**.
+
+Сейчас проверяем только одно: **Docker-образы backend и frontend собираются без ошибок**.  
+Публикацию образов (GHCR) добавим на **шаге 3**.
+
+### Что такое GitHub Actions
+Встроенный «робот» на GitHub. Читает файл `.github/workflows/ci.yml` и выполняет шаги на виртуальной машине в облаке.
+
+| Термин | Значение |
+|--------|----------|
+| **workflow** | Сценарий (файл `.yml`) |
+| **job** | Задача: backend или frontend |
+| **runner** | Виртуальная машина Ubuntu от GitHub |
+| **step** | Один шаг: checkout, docker build… |
+
+### Что создано
+Файл: `.github/workflows/ci.yml` — два job'а параллельно:
+1. **build-backend** — `docker build` в `necommerce-backend/`
+2. **build-frontend** — `docker build` в `necommerce-frontend/`
+
+`push: false` — образ **не** выгружается никуда, только проверка сборки.
+
+### Что сделать ВАМ
+
+```bash
+cd /home/andrey/project/sib-ecommerce-diploma
+
+git add .github/workflows/ci.yml docs/po-shagam.md DIPLOM.md
+git commit -m "Шаг 2: минимальный CI — сборка Docker backend и frontend"
+git push
+```
+
+### Как проверить результат
+
+1. Откройте https://github.com/softm-bot/necommerce-devsecops/actions  
+2. Должен появиться прогон **«CI — Docker build»**  
+3. Оба job'а зелёные = сборка успешна  
+
+**Скриншот для evidence:** `evidence/01-cicd/02-ci-green.png`
+
+Backend может собираться **5–15 минут** (Gradle качает зависимости) — это нормально.
+
+### Если job красный
+- Откройте job → красный step → читайте лог  
+- Скопируйте ошибку в чат — разберём
+
+**Следующий шаг (3):** добавить `push: true` и секрет `GHCR_TOKEN` — публикация образов в GitHub Container Registry.
 
 ---
 
@@ -132,7 +185,7 @@ git push -u origin main
 
 ## Что делать прямо сейчас
 
-1. ✅ Шаг 0 — стенд работает (проверьте в браузере http://127.0.0.1:8888)
-2. ⏳ Сделайте скриншот сайта → `evidence/01-cicd/`
-3. ⏳ Шаг 1 — создайте репозиторий на GitHub и сделайте push
-4. Напишите мне **ссылку на репозиторий** — перейдём к шагу 2 (первый CI)
+1. ✅ Шаг 0 — стенд  
+2. ✅ Шаг 1 — GitHub  
+3. ⏳ **Шаг 2** — выполните push (команды выше в разделе «Шаг 2»)  
+4. Откройте Actions, дождитесь зелёного прогона, скриншот → `evidence/01-cicd/`
