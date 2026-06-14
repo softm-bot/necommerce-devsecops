@@ -1,7 +1,8 @@
-FROM node:lts AS build
+FROM node:16 AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+# npm ci требует идеальной синхронизации lock-файла; npm install надёжнее для CI
+RUN npm install
 COPY . .
 RUN npm run build
 

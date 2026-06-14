@@ -1,4 +1,5 @@
-FROM openjdk:11
+# openjdk:11 снят с Docker Hub — заменён на Eclipse Temurin (официальный JDK)
+FROM eclipse-temurin:11-jdk
 WORKDIR /src
 COPY . .
 RUN ./gradlew bootJar
