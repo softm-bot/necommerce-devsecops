@@ -52,6 +52,18 @@
 
 > Каждая строка = одно действие. Новые записи — **сверху** (после этого заголовка).
 
+### 2026-06-14 — Шаг 2: CI запущен, исправлены Dockerfile ⏳
+
+**Push:** прошёл, workflow на GitHub.
+
+**Первый прогон:** ❌ failure (оба job'а)
+- backend: `openjdk:11` — образ снят с Docker Hub
+- frontend: `npm ci` — lock-файл не синхронизирован + Node слишком новый
+
+**Исправление:** eclipse-temurin:11-jdk, node:16, npm install. Локальная сборка ✅.
+
+**Следующий шаг:** `git push` → дождаться зелёного CI → скриншот.
+
 ### 2026-06-14 — Шаг 2: минимальный CI (подготовка) ⏳
 
 **Что сделано:** Создан `.github/workflows/ci.yml` — два job'а: сборка Docker backend и frontend (`push: false`).
