@@ -21,8 +21,8 @@
 
 | № | Этап | Что нужно | Статус |
 |---|------|-----------|--------|
-| 1 | CI/CD | Сборка Docker-образов, push в GHCR, деплой на VPS | ⏳ |
-| 2 | SAST | Semgrep в пайплайне, артефакты JSON | ⏳ |
+| 1 | CI/CD | Сборка Docker-образов, push в GHCR, деплой на VPS | 🔄 GHCR ✅, VPS ⏳ |
+| 2 | SAST | Semgrep в пайплайне, артефакты JSON | 🔄 в работе |
 | 3 | DAST | OWASP ZAP на работающем стенде, отчёт | ⏳ |
 | 4 | Security Checks | Gitleaks, Trivy, npm audit | ⏳ |
 | 5 | Security Gateway | Блокировка при Critical, комментарий в PR | ⏳ |
@@ -38,9 +38,9 @@
 | 0 | Necommerce работает локально (`docker compose up`) | ✅ 14.06.2026 |
 | 1 | Репозиторий на GitHub, первый push | ✅ 14.06.2026 |
 | 2 | Минимальный CI — только сборка Docker | ✅ 14.06.2026 |
-| 3 | Push образов в GHCR | ⏳ push готов, нужен секрет + push |
-| 4 | SAST (Semgrep) | ⏳ |
-| 5 | Security Checks (Gitleaks, Trivy) | ⏳ |
+| 3 | Push образов в GHCR | ✅ 14.06.2026 |
+| 4 | SAST (Semgrep) | ⏳ push + проверка Actions |
+| 5 | Security Checks (Gitleaks, Trivy) | ⏳ **следующий после SAST** |
 | 6 | DAST (ZAP) | ⏳ |
 | 7 | VPS + автодеплой (свой сервер студента) | ⏳ |
 | 8 | Security Gateway + PR | ⏳ |
@@ -51,6 +51,20 @@
 ## Журнал работ
 
 > Каждая строка = одно действие. Новые записи — **сверху** (после этого заголовка).
+
+### 2026-06-14 — Шаг 4: SAST Semgrep (подготовка) ⏳
+
+**Что сделано:** `.github/workflows/sast.yml` — Semgrep backend (p/ci, p/secrets) + frontend (p/ci, p/javascript), артефакты JSON.
+
+**Следующий шаг:** `git push` → Actions «SAST — Semgrep» → скачать артефакты → скриншот.
+
+### 2026-06-14 — Шаг 3: GHCR зелёный ✅
+
+**Результат:** CI success, образы в `ghcr.io/softm-bot/necommerce-*`.
+
+**Артефакт:** `evidence/01-cicd/03-ghcr-packages.png`
+
+**Следующий шаг:** Шаг 4 — SAST (Semgrep).
 
 ### 2026-06-14 — Шаг 3: GHCR (подготовка) ⏳
 

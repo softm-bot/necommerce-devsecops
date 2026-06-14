@@ -1,0 +1,96 @@
+# SAST — шаг 4: статический анализ исходного кода (Semgrep)
+#
+# SAST = Static Application Security Testing
+# Смотрим КОД, не запуская приложение.
+#
+# Semgrep — сканер с готовыми правилами (p/ci, p/secrets, p/javascript).
+# continue-on-error: находки ожидаемы; блокировка релиза — шаг 8 (Security Gateway).
+
+name: SAST — Semgrep
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  sast-backend:
+    name: SAST — backend (Kotlin)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Скачать код
+        uses: actions/checkout@v4
+
+      - name: Semgrep scan backend
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/src" returntocorp/semgrep semgrep scan \
+            --config p/ci \
+            --config p/secrets \
+            --json --output /src/semgrep-backend.json \
+            /src/necommerce-backend || true
+
+      - name: Краткий отчёт в лог
+        run: |
+          python3 << 'PY'
+          import json, pathlib
+          p = pathlib.Path("semgrep-backend.json")
+          if not p.exists():
+              print("JSON-отчёт не создан")
+              raise SystemExit(0)
+          data = json.loads(p.read_text())
+          results = data.get("results", [])
+          print(f"Backend — находок Semgrep: {len(results)}")
+          for r in results[:15]:
+              extra = r.get("extra", {})
+              sev = extra.get("severity", "?")
+              print(f"  [{sev}] {r.get('check_id')} — {r.get('path')}:{r.get('start',{}).get('line')}")
+          PY
+
+      - name: Сохранить JSON-отчёт
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep-backend
+          path: semgrep-backend.json
+          if-no-files-found: warn
+
+  sast-frontend:
+    name: SAST — frontend (JavaScript)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Скачать код
+        uses: actions/checkout@v4
+
+      - name: Semgrep scan frontend
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/src" returntocorp/semgrep semgrep scan \
+            --config p/ci \
+            --config p/javascript \
+            --json --output /src/semgrep-frontend.json \
+            /src/necommerce-frontend || true
+
+      - name: Краткий отчёт в лог
+        run: |
+          python3 << 'PY'
+          import json, pathlib
+          p = pathlib.Path("semgrep-frontend.json")
+          if not p.exists():
+              print("JSON-отчёт не создан")
+              raise SystemExit(0)
+          data = json.loads(p.read_text())
+          results = data.get("results", [])
+          print(f"Frontend — находок Semgrep: {len(results)}")
+          for r in results[:15]:
+              extra = r.get("extra", {})
+              sev = extra.get("severity", "?")
+              print(f"  [{sev}] {r.get('check_id')} — {r.get('path')}:{r.get('start',{}).get('line')}")
+          PY
+
+      - name: Сохранить JSON-отчёт
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep-frontend
+          path: semgrep-frontend.json
+          if-no-files-found: warn
