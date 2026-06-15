@@ -1,0 +1,20 @@
+# Docker Compose на VPS (production)
+# Образы — из GHCR после CI
+
+services:
+  backend:
+    image: ghcr.io/softm-bot/necommerce-backend:latest
+    restart: unless-stopped
+    ports:
+      - "9999:9999"
+
+  frontend:
+    image: ghcr.io/softm-bot/necommerce-frontend:latest
+    restart: unless-stopped
+    environment:
+      - API=http://backend:9999
+      - MEDIA=http://backend:9999
+    ports:
+      - "8888:80"
+    depends_on:
+      - backend

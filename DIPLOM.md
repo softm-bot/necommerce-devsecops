@@ -6,7 +6,8 @@
 **Задание:** [DevSecOps Track (Netology)](https://github.com/netology-code/sib-Diplom-Track-DevSecOps)  
 **Объект:** [Necommerce](https://github.com/netology-code/necommerce-backend) — backend (Kotlin/Spring), frontend (React), Docker  
 
-**Дата старта с нуля:** 13.06.2026
+**Дата старта с нуля:** 13.06.2026  
+**Пауза:** 15.06.2026 — см. `RESUME.md`, `docs/PAUSA-2026-06-15.md`
 
 ---
 
@@ -21,13 +22,15 @@
 
 | № | Этап | Что нужно | Статус |
 |---|------|-----------|--------|
-| 1 | CI/CD | Сборка Docker-образов, push в GHCR, деплой на VPS | 🔄 GHCR ✅, VPS ⏳ |
-| 2 | SAST | Semgrep в пайплайне, артефакты JSON | 🔄 в работе |
+| 1 | CI/CD | Сборка Docker-образов, push в GHCR, деплой на VPS | ✅ VPS вручную 15.06 |
+| 2 | SAST | Semgrep в пайплайне, артефакты JSON | 🔄 workflow ✅, отчёт ⏳ |
 | 3 | DAST | OWASP ZAP на работающем стенде, отчёт | ⏳ |
 | 4 | Security Checks | Gitleaks, Trivy, npm audit | ⏳ |
 | 5 | Security Gateway | Блокировка при Critical, комментарий в PR | ⏳ |
 
 **Дополнительно:** свой репозиторий на GitHub, скриншоты Actions, итоговый отчёт DOCX/PDF.
+
+**Отчёт для эксперта (Word):** [диплом.docx на Яндекс.Диске](https://disk.yandex.ru/i/XLLxLm5szE_ZNQ) — сюда вставляем скрины + описание по мере работы.
 
 ---
 
@@ -39,18 +42,64 @@
 | 1 | Репозиторий на GitHub, первый push | ✅ 14.06.2026 |
 | 2 | Минимальный CI — только сборка Docker | ✅ 14.06.2026 |
 | 3 | Push образов в GHCR | ✅ 14.06.2026 |
-| 4 | SAST (Semgrep) | ⏳ push + проверка Actions |
-| 5 | Security Checks (Gitleaks, Trivy) | ⏳ **следующий после SAST** |
+| 4 | SAST (Semgrep) | 🔄 workflow в репо; раздел 2 Word — после паузы |
+| 5 | Security Checks (Gitleaks, Trivy) | ⏳ **следующий после паузы** |
 | 6 | DAST (ZAP) | ⏳ |
-| 7 | VPS + автодеплой (свой сервер студента) | ⏳ |
+| 7 | VPS + автодеплой | ✅ VPS вручную; автодеплой CI ⏳ |
 | 8 | Security Gateway + PR | ⏳ |
-| 9 | Итоговый отчёт | ⏳ |
+| 9 | Итоговый отчёт | 🔄 Word: раздел 1 ✅ (1.5, 1.8 финал) |
 
 ---
 
 ## Журнал работ
 
 > Каждая строка = одно действие. Новые записи — **сверху** (после этого заголовка).
+
+### 2026-06-15 — ПАУЗА ⏸️
+
+**Зафиксировано:**
+- Word [диплом.docx](https://disk.yandex.ru/i/XLLxLm5szE_ZNQ): введение, стенд, раздел 1 (1.5 и 1.8 — **финал, не менять**), 9 скринов.
+- VPS `188.225.74.233` — Necommerce из GHCR, HTTP 200.
+- GitHub: CI + GHCR + `sast.yml`.
+- Документация: `RESUME.md`, `docs/PAUSA-2026-06-15.md`, `deploy/`, `evidence/`.
+
+**Следующий шаг после паузы:** шаг 5 — Gitleaks + Trivy.
+
+### 2026-06-15 — Word: разделы 1.5 и 1.8 финализированы ✅
+
+**Решение:** разделы 1.5 (Dockerfile) и 1.8 (VPS) в диплом.docx — **больше не редактируем**.
+
+### 2026-06-15 — Шаг 7: VPS — Necommerce доступен извне ✅
+
+**Проблема:** В CI `.env` не попадает в git → `REACT_APP_API_URL` пустой → API шёл на `/products` вместо `/api/products`.
+
+**Исправление:** `ENV REACT_APP_API_URL=/api` в `necommerce-frontend/Dockerfile`.
+
+**Следующий шаг:** `git push` → CI → на VPS `docker compose pull && docker compose up -d`.
+
+### 2026-06-15 — VPS: Necommerce запущен ✅
+
+**Что сделано:** Docker login GHCR, `docker compose up` на `188.225.74.233`.
+
+**Результат:** Контейнеры Up, локально и снаружи HTTP 200 на :8888.
+
+**Следующий шаг:** скрин `evidence/01-cicd/07-vps-deploy.png`; автодеплой в CI (шаг 7).
+
+### 2026-06-15 — VPS: доступ по SSH ✅
+
+**Что сделано:** Проверено подключение `ssh root@188.225.74.233` — OK, Ubuntu, Docker ещё не установлен.
+
+**Результат:** Сервер для шага 7 (деплой) доступен.
+
+**Следующий шаг:** установить Docker на VPS → запустить Necommerce из GHCR.
+
+### 2026-06-15 — SSH-ключ для выделенного сервера ✅
+
+**Что сделано:** `ssh-keygen -t ed25519` — ключи созданы в `/home/andrey/.ssh/` (не в папке проекта).
+
+**Результат:** `id_ed25519.pub` готов к отправке организаторам (VPS, шаг 7).
+
+**Следующий шаг:** `cat ~/.ssh/id_ed25519.pub` → отправить одну строку → дождаться IP сервера.
 
 ### 2026-06-14 — Шаг 4: SAST Semgrep (подготовка) ⏳
 
@@ -172,13 +221,16 @@
 
 ## Артефакты
 
-Скриншоты и отчёты складываем в `evidence/`:
+**Инструкция по скринам:** [`docs/EVIDENCE-SKRINY.md`](docs/EVIDENCE-SKRINY.md)  
+**Быстрый старт:** `./evidence/open-for-screenshots.sh`
+
+Скриншоты и отчёты — в `evidence/` (см. README в каждой подпапке):
 
 ```
 evidence/
-├── 01-cicd/
-├── 02-sast/
-├── 03-dast/
+├── 01-cicd/           ← 6 скринов СЕЙЧАС (шаги 0–3)
+├── 02-sast/           ← 3 скрина + 2 JSON (шаг 4)
+├── 03-dast/           ← после шага 6
 ├── 04-security-checks/
 └── 05-security-gateway/
 ```

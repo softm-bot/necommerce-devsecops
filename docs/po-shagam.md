@@ -164,6 +164,18 @@ Backend может собираться **5–15 минут** (Gradle качае
 
 ---
 
+## Шаг 3 — публикация в GHCR ⏳
+
+**GHCR** = GitHub Container Registry = `ghcr.io` — склад Docker-образов.
+
+1. Settings → Secrets → `GHCR_TOKEN` (PAT: repo + workflow + write:packages)
+2. `git push` (коммит уже локально: «Шаг 3: публикация…»)
+3. Actions — зелёный прогон
+4. Репозиторий → **Packages** — `necommerce-backend`, `necommerce-frontend`
+5. Скриншот → `evidence/01-cicd/03-ghcr-packages.png`
+
+---
+
 ## Шаг 7 — ваш VPS (заранее, чтобы понимать)
 
 **VPS** — виртуальный сервер в интернете. Ваш личный «компьютер 24/7».
