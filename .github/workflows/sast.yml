@@ -24,6 +24,15 @@ jobs:
 
       - name: Semgrep scan backend
         run: |
+          # docker run --rm          — запустить контейнер Semgrep и удалить после завершения
+          # -v ...:/src            — примонтировать код репозитория внутрь контейнера (/src)
+          # returntocorp/semgrep   — официальный Docker-образ Semgrep
+          # semgrep scan           — режим сканирования исходников
+          # --config p/ci          — типовые уязвимости для CI/CD
+          # --config p/secrets     — поиск паролей и токенов в коде
+          # --json --output ...    — сохранить отчёт в JSON на диск runner'а
+          # /src/necommerce-backend — каталог backend для анализа
+          # || true                — job не падает при находках; блокировка релиза — Security Gateway (раздел 5)
           docker run --rm -v "${{ github.workspace }}:/src" returntocorp/semgrep semgrep scan \
             --config p/ci \
             --config p/secrets \
@@ -49,7 +58,7 @@ jobs:
 
       - name: Сохранить JSON-отчёт
         uses: actions/upload-artifact@v4
-        if: always()
+        if: always()  # JSON сохраняется в любом случае (даже если предыдущий шаг завершился с ошибкой)
         with:
           name: semgrep-backend
           path: semgrep-backend.json
@@ -64,6 +73,15 @@ jobs:
 
       - name: Semgrep scan frontend
         run: |
+          # docker run --rm          — запустить контейнер Semgrep и удалить после завершения
+          # -v ...:/src            — примонтировать код репозитория внутрь контейнера (/src)
+          # returntocorp/semgrep   — официальный Docker-образ Semgrep
+          # semgrep scan           — режим сканирования исходников
+          # --config p/ci          — типовые уязвимости для CI/CD
+          # --config p/javascript  — правила для React/JS (frontend)
+          # --json --output ...    — сохранить отчёт в JSON на диск runner'а
+          # /src/necommerce-frontend — каталог frontend для анализа
+          # || true                — job не падает при находках; блокировка релиза — Security Gateway (раздел 5)
           docker run --rm -v "${{ github.workspace }}:/src" returntocorp/semgrep semgrep scan \
             --config p/ci \
             --config p/javascript \
@@ -89,7 +107,7 @@ jobs:
 
       - name: Сохранить JSON-отчёт
         uses: actions/upload-artifact@v4
-        if: always()
+        if: always()  # JSON сохраняется в любом случае (даже если предыдущий шаг завершился с ошибкой)
         with:
           name: semgrep-frontend
           path: semgrep-frontend.json
