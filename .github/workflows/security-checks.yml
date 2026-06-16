@@ -1,0 +1,276 @@
+# Security Checks — шаг 5: Gitleaks, Trivy, npm audit
+#
+# Security Checks = проверки безопасности репозитория и зависимостей:
+# - Gitleaks — секреты в git-истории
+# - Trivy FS — уязвимости в зависимостях (Gradle, npm)
+# - Trivy Config — misconfiguration в Dockerfile
+# - Trivy Image — уязвимости в собранных Docker-образах
+# - npm audit — уязвимости npm-пакетов frontend
+#
+# exit-code 0 / || true: находки ожидаемы; блокировка релиза — шаг 8 (Security Gateway).
+
+name: Security Checks — Gitleaks, Trivy, npm audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  gitleaks:
+    name: Gitleaks — поиск секретов
+    runs-on: ubuntu-latest
+    steps:
+      - name: Скачать код (полная история)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks scan
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/src" \
+            -w /src \
+            ghcr.io/gitleaks/gitleaks:v8.21.2 \
+            detect \
+            --source /src \
+            --report-path /src/gitleaks-report.json \
+            --report-format json \
+            --verbose || true
+
+      - name: Краткий отчёт в лог
+        run: |
+          python3 << 'PY'
+          import json, pathlib
+          p = pathlib.Path("gitleaks-report.json")
+          if not p.exists() or p.stat().st_size == 0:
+              print("Gitleaks: секретов не обнаружено (или отчёт пуст)")
+              raise SystemExit(0)
+          data = json.loads(p.read_text())
+          findings = data if isinstance(data, list) else data.get("findings", data.get("results", []))
+          print(f"Gitleaks — находок: {len(findings)}")
+          for f in findings[:10]:
+              print(f"  {f.get('RuleID', f.get('rule', '?'))} — {f.get('File', f.get('file', '?'))}")
+          PY
+
+      - name: Сохранить JSON-отчёт
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.json
+          if-no-files-found: warn
+
+  trivy-fs-backend:
+    name: Trivy FS — backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Скачать код
+        uses: actions/checkout@v4
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: necommerce-backend
+          format: json
+          output: trivy-fs-backend.json
+          exit-code: "0"
+          severity: CRITICAL,HIGH,MEDIUM,LOW
+          skip-dirs: necommerce-backend/.gradle
+
+      - name: Краткий отчёт в лог
+        run: |
+          python3 << 'PY'
+          import json, pathlib
+          from collections import Counter
+          p = pathlib.Path("trivy-fs-backend.json")
+          if not p.exists():
+              print("Отчёт не создан")
+              raise SystemExit(0)
+          data = json.loads(p.read_text())
+          sev = Counter()
+          for r in data.get("Results", []):
+              for v in r.get("Vulnerabilities") or []:
+                  sev[v.get("Severity", "?")] += 1
+          print("Trivy FS backend:", dict(sev) if sev else "уязвимостей не найдено")
+          PY
+
+      - name: Сохранить JSON-отчёт
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-fs-backend
+          path: trivy-fs-backend.json
+          if-no-files-found: warn
+
+  trivy-fs-frontend:
+    name: Trivy FS — frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Скачать код
+        uses: actions/checkout@v4
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: necommerce-frontend
+          format: json
+          output: trivy-fs-frontend.json
+          exit-code: "0"
+          severity: CRITICAL,HIGH,MEDIUM,LOW
+          skip-dirs: necommerce-frontend/node_modules
+
+      - name: Краткий отчёт в лог
+        run: |
+          python3 << 'PY'
+          import json, pathlib
+          from collections import Counter
+          p = pathlib.Path("trivy-fs-frontend.json")
+          if not p.exists():
+              print("Отчёт не создан")
+              raise SystemExit(0)
+          data = json.loads(p.read_text())
+          sev = Counter()
+          for r in data.get("Results", []):
+              for v in r.get("Vulnerabilities") or []:
+                  sev[v.get("Severity", "?")] += 1
+          print("Trivy FS frontend:", dict(sev) if sev else "уязвимостей не найдено")
+          PY
+
+      - name: Сохранить JSON-отчёт
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-fs-frontend
+          path: trivy-fs-frontend.json
+          if-no-files-found: warn
+
+  trivy-config:
+    name: Trivy Config — Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Скачать код
+        uses: actions/checkout@v4
+
+      - name: Trivy config scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: config
+          scan-ref: .
+          format: json
+          output: trivy-config.json
+          exit-code: "0"
+
+      - name: Краткий отчёт в лог
+        run: |
+          python3 << 'PY'
+          import json, pathlib
+          p = pathlib.Path("trivy-config.json")
+          if not p.exists():
+              print("Отчёт не создан")
+              raise SystemExit(0)
+          data = json.loads(p.read_text())
+          misconfigs = sum(len(r.get("Misconfigurations") or []) for r in data.get("Results", []))
+          print(f"Trivy Config — misconfigurations: {misconfigs}")
+          PY
+
+      - name: Сохранить JSON-отчёт
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-config
+          path: trivy-config.json
+          if-no-files-found: warn
+
+  npm-audit:
+    name: npm audit — frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: necommerce-frontend
+    steps:
+      - name: Скачать код
+        uses: actions/checkout@v4
+
+      - name: Node.js 16
+        uses: actions/setup-node@v4
+        with:
+          node-version: "16"
+
+      - name: Установить зависимости
+        run: npm install
+
+      - name: npm audit (JSON)
+        run: npm audit --json > ../npm-audit-report.json || true
+
+      - name: Краткий отчёт в лог
+        run: npm audit || true
+
+      - name: Сохранить JSON-отчёт
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-audit-report
+          path: npm-audit-report.json
+          if-no-files-found: warn
+
+  trivy-images:
+    name: Trivy Image — Docker-образы
+    runs-on: ubuntu-latest
+    steps:
+      - name: Скачать код
+        uses: actions/checkout@v4
+
+      - name: Собрать образы для сканирования
+        run: |
+          docker build -t necommerce-backend:scan ./necommerce-backend
+          docker build -t necommerce-frontend:scan ./necommerce-frontend
+
+      - name: Trivy image — backend
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: necommerce-backend:scan
+          format: json
+          output: trivy-image-backend.json
+          exit-code: "0"
+          severity: CRITICAL,HIGH,MEDIUM,LOW
+
+      - name: Trivy image — frontend
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: necommerce-frontend:scan
+          format: json
+          output: trivy-image-frontend.json
+          exit-code: "0"
+          severity: CRITICAL,HIGH,MEDIUM,LOW
+
+      - name: Краткий отчёт в лог
+        run: |
+          python3 << 'PY'
+          import json, pathlib
+          from collections import Counter
+          for name in ("trivy-image-backend.json", "trivy-image-frontend.json"):
+              p = pathlib.Path(name)
+              if not p.exists():
+                  print(f"{name}: отчёт не создан")
+                  continue
+              data = json.loads(p.read_text())
+              sev = Counter()
+              for r in data.get("Results", []):
+                  for v in r.get("Vulnerabilities") or []:
+                      sev[v.get("Severity", "?")] += 1
+              print(f"{name}:", dict(sev) if sev else "уязвимостей не найдено")
+          PY
+
+      - name: Сохранить JSON-отчёты
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-images
+          path: |
+            trivy-image-backend.json
+            trivy-image-frontend.json
+          if-no-files-found: warn
