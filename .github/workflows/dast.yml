@@ -1,0 +1,80 @@
+# DAST — шаг 6: динамический анализ (OWASP ZAP baseline)
+#
+# DAST = Dynamic Application Security Testing
+# Смотрим РАБОТАЮЩИЙ сайт по URL, не исходники в git.
+#
+# Таргет: Necommerce на VPS студента
+# baseline = быстрый пассивный режим (без жёстких атак)
+# || true / мягкий режим: находки не блокируют job; Gateway — шаг 8
+
+name: DAST — OWASP ZAP
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  dast-zap-baseline:
+    name: DAST — OWASP ZAP baseline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Скачать код
+        uses: actions/checkout@v4
+
+      - name: Проверить, что VPS отвечает
+        run: |
+          curl -sf -o /dev/null -w "frontend: %{http_code}\n" http://188.225.74.233:8888/
+          curl -sf -o /dev/null -w "api: %{http_code}\n" http://188.225.74.233:9999/api/products
+
+      - name: ZAP baseline scan
+        run: |
+          # docker run --rm          — контейнер ZAP, удалить после завершения
+          # -v ...:/zap/wrk          — папка для отчётов на диске runner'а
+          # ghcr.io/zaproxy/zaproxy  — официальный образ OWASP ZAP
+          # zap-baseline.py          — baseline-режим (быстро, без агрессивных атак)
+          # -t http://...            — URL развёрнутого приложения на VPS
+          # -r / -J / -w             — отчёты HTML, JSON, Markdown
+          # || true                  — job не падает при находках (мягкий режим, раздел 3)
+          docker run --rm \
+            -v "${{ github.workspace }}:/zap/wrk:rw" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+            -t http://188.225.74.233:8888/ \
+            -r zap-report.html \
+            -J zap-report.json \
+            -w zap-report.md \
+            || true
+
+      - name: Краткий итог в лог
+        run: |
+          if [ -f zap-report.html ]; then
+            echo "ZAP: отчёт HTML создан ($(wc -c < zap-report.html) байт)"
+          else
+            echo "ZAP: HTML-отчёт не найден"
+          fi
+          if [ -f zap-report.json ]; then
+            python3 << 'PY'
+          import json, pathlib
+          p = pathlib.Path("zap-report.json")
+          try:
+              data = json.loads(p.read_text())
+          except Exception:
+              print("ZAP JSON: не удалось разобрать")
+              raise SystemExit(0)
+          alerts = data.get("site", [{}])[0].get("alerts", []) if isinstance(data.get("site"), list) else []
+          print(f"ZAP — предупреждений в JSON: {len(alerts)}")
+          PY
+          fi
+
+      - name: Сохранить отчёты ZAP
+        uses: actions/upload-artifact@v4
+        if: always()  # отчёты сохраняются в любом случае
+        with:
+          name: zap-reports
+          path: |
+            zap-report.html
+            zap-report.json
+            zap-report.md
+          if-no-files-found: warn
