@@ -35,7 +35,7 @@ jobs:
           # ghcr.io/zaproxy/zaproxy  — официальный образ OWASP ZAP
           # zap-baseline.py          — baseline-режим (быстро, без агрессивных атак)
           # -t http://...            — URL развёрнутого приложения на VPS
-          # -r / -J / -w             — отчёты HTML, JSON, Markdown (в /zap/wrk)
+          # -r / -J / -w             — имена файлов (относительно /zap/wrk, не полный путь!)
           # chmod a+w                — ZAP в контейнере не root; без этого отчёты не пишутся
           # -I                       — не падать на WARN (мягкий режим, раздел 3)
           chmod a+w "${{ github.workspace }}"
@@ -44,9 +44,9 @@ jobs:
             -t ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t http://188.225.74.233:8888/ \
-            -r /zap/wrk/zap-report.html \
-            -J /zap/wrk/zap-report.json \
-            -w /zap/wrk/zap-report.md \
+            -r zap-report.html \
+            -J zap-report.json \
+            -w zap-report.md \
             -I
 
       - name: Краткий итог в лог
