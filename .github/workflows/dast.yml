@@ -35,17 +35,19 @@ jobs:
           # ghcr.io/zaproxy/zaproxy  — официальный образ OWASP ZAP
           # zap-baseline.py          — baseline-режим (быстро, без агрессивных атак)
           # -t http://...            — URL развёрнутого приложения на VPS
-          # -r / -J / -w             — отчёты HTML, JSON, Markdown
-          # || true                  — job не падает при находках (мягкий режим, раздел 3)
+          # -r / -J / -w             — отчёты HTML, JSON, Markdown (в /zap/wrk)
+          # chmod a+w                — ZAP в контейнере не root; без этого отчёты не пишутся
+          # -I                       — не падать на WARN (мягкий режим, раздел 3)
+          chmod a+w "${{ github.workspace }}"
           docker run --rm \
             -v "${{ github.workspace }}:/zap/wrk:rw" \
-            ghcr.io/zaproxy/zaproxy:stable \
+            -t ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t http://188.225.74.233:8888/ \
-            -r zap-report.html \
-            -J zap-report.json \
-            -w zap-report.md \
-            || true
+            -r /zap/wrk/zap-report.html \
+            -J /zap/wrk/zap-report.json \
+            -w /zap/wrk/zap-report.md \
+            -I
 
       - name: Краткий итог в лог
         run: |
@@ -53,6 +55,8 @@ jobs:
             echo "ZAP: отчёт HTML создан ($(wc -c < zap-report.html) байт)"
           else
             echo "ZAP: HTML-отчёт не найден"
+            echo "Содержимое workspace:"
+            ls -la
           fi
           if [ -f zap-report.json ]; then
             python3 << 'PY'
