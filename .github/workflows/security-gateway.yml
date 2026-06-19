@@ -104,6 +104,7 @@ jobs:
           STRICT: "1"
         run: |
           set +e
+          set -o pipefail
           python3 scripts/security-gateway.py | tee gateway-log.txt
           code=$?
           echo "exit=$code" >> "$GITHUB_OUTPUT"
