@@ -102,9 +102,10 @@ jobs:
         env:
           REPORTS_DIR: reports
           GATEWAY_SHA: ${{ steps.sha.outputs.value }}
-          STRICT: "0"
+          STRICT: "1"
         run: |
           set +e
+          set -o pipefail
           python3 scripts/security-gateway.py | tee gateway-log.txt
           code=$?
           echo "exit=$code" >> "$GITHUB_OUTPUT"
