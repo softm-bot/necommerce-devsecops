@@ -1,8 +1,4 @@
-# CI — сборка Docker и публикация в GHCR (шаги 2–3)
-#
-# Шаг 2: docker build — проверка, что образы собираются
-# Шаг 3: push в GHCR — образы попадают в GitHub Container Registry
-#
+# CI — сборка Docker и публикация в GHCR
 # GHCR = GitHub Container Registry = ghcr.io — «склад» Docker-образов
 #
 # Секрет GitHub: GHCR_TOKEN (PAT с правами repo, workflow, write:packages)

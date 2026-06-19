@@ -1,13 +1,4 @@
-# Security Checks — шаг 5: Gitleaks, Trivy, npm audit
-#
-# Security Checks = проверки безопасности репозитория и зависимостей:
-# - Gitleaks — секреты в git-истории
-# - Trivy FS — уязвимости в зависимостях (Gradle, npm)
-# - Trivy Config — misconfiguration в Dockerfile
-# - Trivy Image — уязвимости в собранных Docker-образах
-# - npm audit — уязвимости npm-пакетов frontend
-#
-# exit-code 0 / || true: находки ожидаемы; блокировка релиза — шаг 8 (Security Gateway).
+# Security Checks — Gitleaks, Trivy, npm audit
 
 name: Security Checks — Gitleaks, Trivy, npm audit
 

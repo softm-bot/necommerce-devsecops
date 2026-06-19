@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """
-Security Gateway — сводка отчётов SAST / DAST / Security Checks (раздел 5).
+Security Gateway — сводка отчётов SAST / DAST / Security Checks.
 
-Политика (diploma, мягкая):
+Политика (STRICT=0):
   BLOCK — Gitleaks >= 1; Semgrep severity ERROR >= 1
   WARN  — Trivy Image CRITICAL/HIGH; ZAP alerts; npm audit critical/high
-  INFO  — npm audit moderate/low (информирование)
 
 STRICT=1 — дополнительно BLOCK при Trivy Image CRITICAL >= 1 или npm critical >= 1
 """

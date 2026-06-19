@@ -1,39 +1,39 @@
-# Necommerce — диплом DevSecOps
+# Necommerce DevSecOps
 
-**Студент:** Западаев Андрей · **Эксперт:** Нияз Кашапов
+Дипломная работа по треку DevSecOps (Нетология).  
+**Студент:** Западаев Андрей · **Группа:** SIBWEB-57
 
----
+Монорепозиторий интернет-магазина [Necommerce](https://github.com/netology-code/necommerce-backend): backend (Kotlin/Spring), frontend (React), CI/CD и проверки безопасности в GitHub Actions.
 
-## Единственный рабочий документ
+## Репозиторий
 
-👉 **[DIPLOM.md](DIPLOM.md)** — журнал  
-👉 **[RESUME.md](RESUME.md)** — **продолжить после паузы**  
-👉 **[docs/PAUSA-2026-06-15.md](docs/PAUSA-2026-06-15.md)** — снимок состояния  
-👉 **[диплом.docx](https://disk.yandex.ru/i/XLLxLm5szE_ZNQ)** — отчёт для эксперта
+https://github.com/softm-bot/necommerce-devsecops
 
----
-
-## Продукт
+## Локальный запуск
 
 ```bash
-cd /home/andrey/project/sib-ecommerce-diploma
-sudo docker compose up -d
+docker compose up -d
 ```
 
 - Сайт: http://127.0.0.1:8888  
-- API: http://127.0.0.1:9999  
+- API: http://127.0.0.1:9999/api/products  
 
----
+## Пайплайн
 
-## Структура
+| Workflow | Назначение |
+|----------|------------|
+| `ci.yml` | Сборка Docker, публикация в GHCR |
+| `sast.yml` | Semgrep (backend, frontend) |
+| `dast.yml` | OWASP ZAP baseline |
+| `security-checks.yml` | Gitleaks, Trivy, npm audit |
+| `security-gateway.yml` | Политика, сводка, комментарии в PR |
 
-```
-necommerce-backend/    ← код backend
-necommerce-frontend/   ← код frontend
-docker-compose.yml     ← локальный стенд
-DIPLOM.md              ← весь прогресс диплoma
-evidence/              ← скриншоты и отчёты по этапам
-.github/workflows/     ← пайплайн (собираем по шагам)
-```
+## Стенд
 
-Всё до 13.06.2026 — теоретическая подготовка, не учитывается.
+- **GHCR:** `ghcr.io/softm-bot/necommerce-backend`, `necommerce-frontend`
+- **VPS:** http://188.225.74.233:8888
+
+## Документация
+
+- [DIPLOM.md](DIPLOM.md) — описание проекта и архитектуры
+- [docs/FORMAT-SDACHI.md](docs/FORMAT-SDACHI.md) — структура отчёта

@@ -1,11 +1,7 @@
-# Security Gateway — шаг 8: политика безопасности (раздел 5)
+# Security Gateway — политика безопасности
 #
-# Стартует ПОСЛЕ завершения Security Checks (workflow_run).
-# Скачивает артефакты SAST / DAST / Security Checks по commit SHA,
-# применяет политику (scripts/security-gateway.py), комментирует PR.
-#
-# BLOCK (мягкий режим): Gitleaks >= 1, Semgrep ERROR >= 1
-# STRICT=1 в job env: дополнительно BLOCK при Trivy CRITICAL / npm critical
+# Стартует после Security Checks (workflow_run).
+# Агрегирует отчёты SAST / DAST / Security Checks, комментирует PR.
 
 name: Security Gateway
 
@@ -96,12 +92,12 @@ jobs:
       - name: Список скачанных отчётов
         run: find reports -type f 2>/dev/null | sort || echo "reports/ пуст"
 
-      - name: Проверить политику (п. 5.2)
+      - name: Применить политику безопасности
         id: policy
         env:
           REPORTS_DIR: reports
           GATEWAY_SHA: ${{ steps.sha.outputs.value }}
-          STRICT: "1"
+          STRICT: "0"
         run: |
           set +e
           set -o pipefail

@@ -1,11 +1,4 @@
-# DAST — шаг 6: динамический анализ (OWASP ZAP baseline)
-#
-# DAST = Dynamic Application Security Testing
-# Смотрим РАБОТАЮЩИЙ сайт по URL, не исходники в git.
-#
-# Таргет: Necommerce на VPS студента
-# baseline = быстрый пассивный режим (без жёстких атак)
-# || true / мягкий режим: находки не блокируют job; Gateway — шаг 8
+# DAST — динамический анализ (OWASP ZAP baseline)
 
 name: DAST — OWASP ZAP
 
@@ -37,7 +30,7 @@ jobs:
           # -t http://...            — URL развёрнутого приложения на VPS
           # -r / -J / -w             — имена файлов (относительно /zap/wrk, не полный путь!)
           # chmod a+w                — ZAP в контейнере не root; без этого отчёты не пишутся
-          # -I                       — не падать на WARN (мягкий режим, раздел 3)
+          # -I                       — не падать на WARN (мягкий режим)
           chmod a+w "${{ github.workspace }}"
           docker run --rm \
             -v "${{ github.workspace }}:/zap/wrk:rw" \

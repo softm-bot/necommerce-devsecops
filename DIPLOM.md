@@ -1,260 +1,64 @@
-# Диплом DevSecOps — рабочий журнал
+# Necommerce DevSecOps — описание проекта
 
-**Студент:** Западаев Андрей  
-**Группа:** SIBWEB-57  
-**Эксперт:** Нияз Кашапов  
-**Задание:** [DevSecOps Track (Netology)](https://github.com/netology-code/sib-Diplom-Track-DevSecOps)  
-**Объект:** [Necommerce](https://github.com/netology-code/necommerce-backend) — backend (Kotlin/Spring), frontend (React), Docker  
+**Студент:** Западаев Андрей · **Группа:** SIBWEB-57 · **Эксперт:** Нияз Кашапов
 
-**Дата старта с нуля:** 13.06.2026  
-**Пауза:** 15.06.2026 — см. `RESUME.md`, `docs/PAUSA-2026-06-15.md`
+## Цель
 
----
+Построить CI/CD-пайплайн с интеграцией практик DevSecOps для open-source проекта Necommerce на платформе GitHub Actions.
 
-## Принцип
+## Объект
 
-Всё, что делалось до этой даты (курсовая, черновики пайплайна, пробные прогоны Semgrep/Trivy/ZAP) — **только теоретическая подготовка**.  
-**В этот документ** фиксируем только реальную работу над дипломом: что сделали, когда, какой результат, где артефакт.
+- Backend: Kotlin, Spring Boot, Gradle  
+- Frontend: React, npm  
+- Контейнеризация: Docker, Docker Compose  
+- Реестр образов: GitHub Container Registry (GHCR)  
+- Стенд: VPS `188.225.74.233`
 
----
-
-## Критерии сдачи (5 этапов)
-
-| № | Этап | Что нужно | Статус |
-|---|------|-----------|--------|
-| 1 | CI/CD | Сборка Docker-образов, push в GHCR, деплой на VPS | ✅ VPS вручную 15.06 |
-| 2 | SAST | Semgrep в пайплайне, артефакты JSON | 🔄 workflow ✅, отчёт ⏳ |
-| 3 | DAST | OWASP ZAP на работающем стенде, отчёт | ⏳ |
-| 4 | Security Checks | Gitleaks, Trivy, npm audit | ⏳ |
-| 5 | Security Gateway | Блокировка при Critical, комментарий в PR | ⏳ |
-
-**Дополнительно:** свой репозиторий на GitHub, скриншоты Actions, итоговый отчёт DOCX/PDF.
-
-**Отчёт для эксперта (Word):** [диплом.docx на Яндекс.Диске](https://disk.yandex.ru/i/XLLxLm5szE_ZNQ) — сюда вставляем скрины + описание по мере работы.
-
----
-
-## План работ (по шагам)
-
-| Шаг | Задача | Статус |
-|-----|--------|--------|
-| 0 | Necommerce работает локально (`docker compose up`) | ✅ 14.06.2026 |
-| 1 | Репозиторий на GitHub, первый push | ✅ 14.06.2026 |
-| 2 | Минимальный CI — только сборка Docker | ✅ 14.06.2026 |
-| 3 | Push образов в GHCR | ✅ 14.06.2026 |
-| 4 | SAST (Semgrep) | 🔄 workflow в репо; раздел 2 Word — после паузы |
-| 5 | Security Checks (Gitleaks, Trivy) | ⏳ **следующий после паузы** |
-| 6 | DAST (ZAP) | ⏳ |
-| 7 | VPS + автодеплой | ✅ VPS вручную; автодеплой CI ⏳ |
-| 8 | Security Gateway + PR | ⏳ |
-| 9 | Итоговый отчёт | 🔄 Word: раздел 1 ✅ (1.5, 1.8 финал) |
-
----
-
-## Журнал работ
-
-> Каждая строка = одно действие. Новые записи — **сверху** (после этого заголовка).
-
-### 2026-06-15 — ПАУЗА ⏸️
-
-**Зафиксировано:**
-- Word [диплом.docx](https://disk.yandex.ru/i/XLLxLm5szE_ZNQ): введение, стенд, раздел 1 (1.5 и 1.8 — **финал, не менять**), 9 скринов.
-- VPS `188.225.74.233` — Necommerce из GHCR, HTTP 200.
-- GitHub: CI + GHCR + `sast.yml`.
-- Документация: `RESUME.md`, `docs/PAUSA-2026-06-15.md`, `deploy/`, `evidence/`.
-
-**Следующий шаг после паузы:** шаг 5 — Gitleaks + Trivy.
-
-### 2026-06-15 — Word: разделы 1.5 и 1.8 финализированы ✅
-
-**Решение:** разделы 1.5 (Dockerfile) и 1.8 (VPS) в диплом.docx — **больше не редактируем**.
-
-### 2026-06-15 — Шаг 7: VPS — Necommerce доступен извне ✅
-
-**Проблема:** В CI `.env` не попадает в git → `REACT_APP_API_URL` пустой → API шёл на `/products` вместо `/api/products`.
-
-**Исправление:** `ENV REACT_APP_API_URL=/api` в `necommerce-frontend/Dockerfile`.
-
-**Следующий шаг:** `git push` → CI → на VPS `docker compose pull && docker compose up -d`.
-
-### 2026-06-15 — VPS: Necommerce запущен ✅
-
-**Что сделано:** Docker login GHCR, `docker compose up` на `188.225.74.233`.
-
-**Результат:** Контейнеры Up, локально и снаружи HTTP 200 на :8888.
-
-**Следующий шаг:** скрин `evidence/01-cicd/07-vps-deploy.png`; автодеплой в CI (шаг 7).
-
-### 2026-06-15 — VPS: доступ по SSH ✅
-
-**Что сделано:** Проверено подключение `ssh root@188.225.74.233` — OK, Ubuntu, Docker ещё не установлен.
-
-**Результат:** Сервер для шага 7 (деплой) доступен.
-
-**Следующий шаг:** установить Docker на VPS → запустить Necommerce из GHCR.
-
-### 2026-06-15 — SSH-ключ для выделенного сервера ✅
-
-**Что сделано:** `ssh-keygen -t ed25519` — ключи созданы в `/home/andrey/.ssh/` (не в папке проекта).
-
-**Результат:** `id_ed25519.pub` готов к отправке организаторам (VPS, шаг 7).
-
-**Следующий шаг:** `cat ~/.ssh/id_ed25519.pub` → отправить одну строку → дождаться IP сервера.
-
-### 2026-06-14 — Шаг 4: SAST Semgrep (подготовка) ⏳
-
-**Что сделано:** `.github/workflows/sast.yml` — Semgrep backend (p/ci, p/secrets) + frontend (p/ci, p/javascript), артефакты JSON.
-
-**Следующий шаг:** `git push` → Actions «SAST — Semgrep» → скачать артефакты → скриншот.
-
-### 2026-06-14 — Шаг 3: GHCR зелёный ✅
-
-**Результат:** CI success, образы в `ghcr.io/softm-bot/necommerce-*`.
-
-**Артефакт:** `evidence/01-cicd/03-ghcr-packages.png`
-
-**Следующий шаг:** Шаг 4 — SAST (Semgrep).
-
-### 2026-06-14 — Шаг 3: GHCR (подготовка) ⏳
-
-**Что сделано:** `ci.yml` — login в GHCR + `push: true` + теги `ghcr.io/softm-bot/necommerce-*`.
-
-**Нужно от студента:** секрет `GHCR_TOKEN` в GitHub → push → проверить Packages.
-
-**Следующий шаг:** после зелёного CI — шаг 4 (SAST Semgrep).
-
-### 2026-06-14 — Шаг 2: CI зелёный ✅
-
-**Результат:** прогон «CI — Docker build» — оба job'а success (backend + frontend).
-
-**Артефакт:** скриншот → `evidence/01-cicd/02-ci-green.png`
-
-**Следующий шаг:** Шаг 3 — публикация образов в GHCR.
-
-### 2026-06-14 — Шаг 2: CI запущен, исправлены Dockerfile ⏳
-
-**Push:** прошёл, workflow на GitHub.
-
-**Первый прогон:** ❌ failure (оба job'а)
-- backend: `openjdk:11` — образ снят с Docker Hub
-- frontend: `npm ci` — lock-файл не синхронизирован + Node слишком новый
-
-**Исправление:** eclipse-temurin:11-jdk, node:16, npm install. Локальная сборка ✅.
-
-**Следующий шаг:** `git push` → дождаться зелёного CI → скриншот.
-
-### 2026-06-14 — Шаг 2: минимальный CI (подготовка) ⏳
-
-**Что сделано:** Создан `.github/workflows/ci.yml` — два job'а: сборка Docker backend и frontend (`push: false`).
-
-**Зачем:** CI проверяет, что код собирается при каждом push. Публикация образов — шаг 3.
-
-**Следующий шаг:** `git add`, `commit`, `push` → проверить Actions → скриншот в `evidence/01-cicd/`.
-
-### 2026-06-14 — Шаг 1: GitHub push ✅
-
-**Что сделано:** `git push -u origin main` — 156 объектов, ветка `main` на GitHub.
-
-**Результат:** https://github.com/softm-bot/necommerce-devsecops — код на GitHub, 3 коммита.
-
-**Следующий шаг:** написать эксперту Ниязу ссылку на репозиторий; Шаг 2 — минимальный CI (сборка Docker).
-
-### 2026-06-14 — Шаг 1: remote GitHub ✅
-
-**Что сделано:**
-- Remote: https://github.com/softm-bot/necommerce-devsecops
-- Локально: 2 коммита на `main` (`5bef6ac`, `cea7a16`)
-
-**Результат:** Remote настроен, push выполнен пользователем.
-
-**Следующий шаг:** —
-
-### 2026-06-14 — Шаг 1: подготовка Git (локально) ✅
-
-**Что сделано:**
-- Удалены вложенные `.git` в `necommerce-backend/` и `necommerce-frontend/` (единый монорепозиторий)
-- Убран случайно сохранённый PAT из `docs/po-shagam.md`
-- `git init`, ветка `main`, первый коммит `5bef6ac` (113 файлов)
-- Проверено: `fcm.json`, `.env`, ключи — **не** в коммите
-
-**Результат:** Код готов к push.
-
-**Следующий шаг:** создать репозиторий на GitHub, `git push`.
-
-### 2026-06-14 — Шаг 0: локальный стенд ✅
-
-**Что сделано:** `sudo docker compose up -d` — подняты контейнеры backend и frontend.
-
-**Проверка:**
-- http://127.0.0.1:8888 → HTTP 200
-- http://127.0.0.1:9999/api/products → JSON с товарами
-
-**Артефакт:** скриншот сайта → `evidence/01-cicd/00-local-stand.png` (сделать вручную)
-
-**Следующий шаг:** Шаг 1 — репозиторий на GitHub, первый push. Инструкция: `docs/po-shagam.md`
-
-### 2026-06-14 — Полный сброс проекта
-
-**Что сделано:** Удалены все черновики, архив курсовой, старая документация (`diploma/`, `archive/`, `deploy/`, `reports/` и др.). Оставлен только продукт Necommerce + `docker-compose.yml`. Создан единственный рабочий документ **`DIPLOM.md`**.
-
-**Результат:** Чистая база для диплoma. Вся прошлая работа = теоретическая подготовка.
-
-**Следующий шаг:** Шаг 0 — `sudo docker compose up -d`, проверить http://127.0.0.1:8888
-
-### 2026-06-13 — Старт с нуля
-
-**Что сделано:** Решение начать диплом заново. Вся предыдущая работа — теоретическая подготовка. Создан единственный рабочий документ `DIPLOM.md`.
-
-**Результат:** Чистая база: только код Necommerce + `docker-compose.yml`.
-
-**Следующий шаг:** Шаг 0 — поднять Necommerce локально.
-
----
-
-## Переписка с экспертом
-
-| Дата | Суть |
-|------|------|
-| 11.06.2026 | Нияз: направление верное, можно доделывать. Нужна **ссылка на репозиторий** или текст пайплайнов. |
-
----
-
-## Артефакты
-
-**Инструкция по скринам:** [`docs/EVIDENCE-SKRINY.md`](docs/EVIDENCE-SKRINY.md)  
-**Быстрый старт:** `./evidence/open-for-screenshots.sh`
-
-Скриншоты и отчёты — в `evidence/` (см. README в каждой подпапке):
+## Архитектура пайплайна
 
 ```
-evidence/
-├── 01-cicd/           ← 6 скринов СЕЙЧАС (шаги 0–3)
-├── 02-sast/           ← 3 скрина + 2 JSON (шаг 4)
-├── 03-dast/           ← после шага 6
-├── 04-security-checks/
-└── 05-security-gateway/
+push / pull_request
+    ├── CI — сборка и push образов в GHCR
+    ├── SAST — Semgrep
+    ├── DAST — OWASP ZAP (baseline)
+    └── Security Checks — Gitleaks, Trivy, npm audit
+              │
+              ▼ (workflow_run)
+        Security Gateway — политика, сводка, комментарий в PR
 ```
 
----
+Сканеры SAST, DAST и Security Checks работают в информирующем режиме и сохраняют отчёты в Artifacts. **Security Gateway** агрегирует результаты и применяет политику блокировки (`scripts/security-gateway.py`).
 
-## Полезные команды
+## Политика Security Gateway
 
-```bash
-cd /home/andrey/project/sib-ecommerce-diploma
+| Уровень | Условие |
+|---------|---------|
+| BLOCK (базовый) | Gitleaks ≥ 1; Semgrep ERROR ≥ 1 |
+| BLOCK (STRICT=1) | дополнительно Trivy Image CRITICAL ≥ 1; npm critical ≥ 1 |
+| WARN | ZAP, Trivy HIGH, npm high/moderate |
 
-# Локальный стенд
-sudo docker compose up -d
-sudo docker compose ps
+## Этапы Netology
 
-# Сайт: http://127.0.0.1:8888
-# API:  http://127.0.0.1:9999/api/products
+| № | Этап | Реализация |
+|---|------|------------|
+| 1 | CI/CD | `ci.yml`, GHCR, VPS |
+| 2 | SAST | `sast.yml`, Semgrep |
+| 3 | DAST | `dast.yml`, OWASP ZAP |
+| 4 | Security Checks | `security-checks.yml` |
+| 5 | Security Gateway | `security-gateway.yml` |
+
+## Структура репозитория
+
 ```
-
----
+.github/workflows/     — конфигурация CI/CD и DevSecOps
+necommerce-backend/    — backend
+necommerce-frontend/   — frontend
+scripts/               — Security Gateway (политика)
+deploy/                — скрипты развёртывания на VPS
+docker-compose.yml     — локальный стенд
+```
 
 ## Ссылки
 
+- [Репозиторий](https://github.com/softm-bot/necommerce-devsecops)
 - [Задание трека DevSecOps](https://github.com/netology-code/sib-Diplom-Track-DevSecOps)
-- [Necommerce backend](https://github.com/netology-code/necommerce-backend)
-- [Necommerce frontend](https://github.com/netology-code/necommerce-frontend)
-- [GitHub-репозиторий диплoma](https://github.com/softm-bot/necommerce-devsecops)

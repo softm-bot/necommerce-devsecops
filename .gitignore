@@ -19,6 +19,12 @@ necommerce-frontend/build/
 # IDE / OS
 .idea/
 .vscode/
+.cursor/
 *.swp
 .DS_Store
 Thumbs.db
+
+# Временные отчёты сканеров
+gitleaks-report.json
+.zap-tmp/
+**/__pycache__/

@@ -1,10 +1,4 @@
-# SAST — шаг 4: статический анализ исходного кода (Semgrep)
-#
-# SAST = Static Application Security Testing
-# Смотрим КОД, не запуская приложение.
-#
-# Semgrep — сканер с готовыми правилами (p/ci, p/secrets, p/javascript).
-# continue-on-error: находки ожидаемы; блокировка релиза — шаг 8 (Security Gateway).
+# SAST — статический анализ исходного кода (Semgrep)
 
 name: SAST — Semgrep
 
@@ -32,7 +26,7 @@ jobs:
           # --config p/secrets     — поиск паролей и токенов в коде
           # --json --output ...    — сохранить отчёт в JSON на диск runner'а
           # /src/necommerce-backend — каталог backend для анализа
-          # || true                — job не падает при находках; блокировка релиза — Security Gateway (раздел 5)
+          # || true                — job не падает при находках; итог — Security Gateway
           docker run --rm -v "${{ github.workspace }}:/src" returntocorp/semgrep semgrep scan \
             --config p/ci \
             --config p/secrets \
@@ -81,7 +75,7 @@ jobs:
           # --config p/javascript  — правила для React/JS (frontend)
           # --json --output ...    — сохранить отчёт в JSON на диск runner'а
           # /src/necommerce-frontend — каталог frontend для анализа
-          # || true                — job не падает при находках; блокировка релиза — Security Gateway (раздел 5)
+          # || true                — job не падает при находках; итог — Security Gateway
           docker run --rm -v "${{ github.workspace }}:/src" returntocorp/semgrep semgrep scan \
             --config p/ci \
             --config p/javascript \
