@@ -1,0 +1,4 @@
+# УЧЕБНАЯ ДЕМОНСТРАЦИЯ — НЕ МЕРЖИТЬ В main
+# Только для скрина Security Gateway BLOCK (п. 5.6)
+AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
